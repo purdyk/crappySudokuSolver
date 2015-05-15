@@ -9,8 +9,8 @@ else:
     start = "800003700040605000203790000630000050000000000090000071000067504000801090004500003"
 
 history = []
-
 guesses = 0
+
 
 def construct_board():
     board = [[]] * 9
@@ -39,30 +39,51 @@ def remove_if_unique(available, options):
     return available
 
 
+def safe_remove(list, toremove):
+    for each in toremove:
+        if each in list:
+            list.remove(each)
+
+
 def available_row(board, rownum):
     available = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    unavailable_elsewhere = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     for i in range(0, 9):
-        available = remove_if_unique(available, board[rownum][i])
+        cell = board[rownum][i]
+        available = remove_if_unique(available, cell)
+        safe_remove(unavailable_elsewhere, cell)
+
         if not available:
             break
+
+    if len(unavailable_elsewhere) == 1:
+        return unavailable_elsewhere
 
     return available
 
 
 def available_col(board, colnum):
     available = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    unavailable_elsewhere = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     for i in range(0, 9):
-        available = remove_if_unique(available, board[i][colnum])
+        cell = board[i][colnum]
+        available = remove_if_unique(available, cell)
+        safe_remove(unavailable_elsewhere, cell)
+
         if not available:
             break
+
+    if len(unavailable_elsewhere) == 1:
+        return unavailable_elsewhere
 
     return available
 
 
 def available_square(board, rownum, colnum):
     available = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    unavailable_elsewhere = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     squarenum = 3 * (rownum / 3) + (colnum / 3)
     startrow = 3 * (squarenum / 3)
@@ -77,9 +98,15 @@ def available_square(board, rownum, colnum):
         c = startcol + offcol
 
         # print "Searching {}x{}".format(r, c)
-        available = remove_if_unique(available, board[r][c])
+        cell = board[r][c]
+        available = remove_if_unique(available, cell)
+        safe_remove(unavailable_elsewhere, cell)
+
         if not available:
             break
+
+    if len(unavailable_elsewhere) == 1:
+        return unavailable_elsewhere
 
     return available
 
@@ -216,6 +243,7 @@ while unsolved_cells(b) > 0:
 
     while status == -1:
         b = history.pop()
+        guesses += 1
         status = iter_reduce(b)
 
 print "Solved in {} guesses".format(guesses)
